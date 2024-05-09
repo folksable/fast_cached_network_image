@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:native_dio_adapter/native_dio_adapter.dart';
 import 'package:uuid/uuid.dart';
 import 'models/fast_cache_progress_data.dart';
 import 'package:dio/dio.dart';
@@ -302,7 +304,8 @@ class _FastCachedImageState extends State<FastCachedImage>
 
     try {
       final Uri resolved = Uri.base.resolve(url);
-      Dio dio = Dio();
+      Dio dio = Dio()
+      ..httpClientAdapter = NativeAdapter();
 
       if (!mounted) return;
 
@@ -558,7 +561,7 @@ class FastCachedImageProvider extends ImageProvider<NetworkImage>
 
   @override
   ImageStreamCompleter loadBuffer(
-      NetworkImage key, DecoderBufferCallback decode) {
+      NetworkImage key, decode) {
     final StreamController<ImageChunkEvent> chunkEvents =
         StreamController<ImageChunkEvent>();
 
@@ -577,11 +580,13 @@ class FastCachedImageProvider extends ImageProvider<NetworkImage>
   Future<ui.Codec> _loadAsync(
     FastCachedImageProvider key,
     StreamController<ImageChunkEvent> chunkEvents,
-    DecoderBufferCallback decode,
+    decode,
   ) async {
     try {
       assert(key == this);
-      Dio dio = Dio();
+      Dio dio = Dio()
+          ..httpClientAdapter = NativeAdapter();
+          
       FastCachedImageConfig._checkInit();
       Uint8List? image = await FastCachedImageConfig._getImage(url);
       if (image != null) {
